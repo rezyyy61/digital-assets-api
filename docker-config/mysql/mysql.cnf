@@ -1,0 +1,35 @@
+[mysqld]
+# Basic settings
+user=mysql
+bind-address=0.0.0.0  # Allow connections from all IPs within the Docker network
+port=3306
+
+# Character set and collation
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+
+# SQL modes to follow strict rules
+sql_mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+
+# Maximum allowed packet size (default: 16M)
+max_allowed_packet=64M
+
+# InnoDB Settings
+innodb_buffer_pool_size=256M
+innodb_log_file_size=128M
+innodb_flush_log_at_trx_commit=1
+innodb_file_per_table=ON
+
+# Connection limits
+max_connections=200
+
+# Logs
+log-error=/var/log/mysql/error.log
+general_log_file=/var/log/mysql/general.log
+general_log=1
+
+[client]
+default-character-set=utf8mb4
+
+[mysql]
+default-character-set=utf8mb4

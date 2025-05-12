@@ -1,0 +1,70 @@
+services:
+    dapi_app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                USER_UID: ${UID}
+                USER_GID: ${GID}
+        image: ${APP_IMAGE:-dapi_app_image}
+        container_name: dapi_app
+        restart: unless-stopped
+        depends_on:
+            - dapi_mysql
+            - dapi_redis
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+            - ./docker-config/php/php.ini:/usr/local/etc/php/php.ini
+        networks:
+            - dapi_network
+
+    dapi_webserver:
+        platform: linux/amd64
+        image: nginx:alpine
+        container_name: dapi_webserver
+        restart: unless-stopped
+        depends_on:
+            - dapi_app
+        ports:
+            - "8080:80"
+        volumes:
+            - ./:/var/www
+            - ./docker-config/nginx/:/etc/nginx/conf.d
+        networks:
+            - dapi_network
+
+    dapi_mysql:
+        platform: linux/amd64
+        image: mysql:5.7.22
+        container_name: dapi_mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE:-dapi_db}
+            MYSQL_USER: ${MYSQL_USER:-dapi_user}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        volumes:
+            - dapi_mysql_data:/var/lib/mysql
+            - ./docker-config/mysql/mysql.cnf:/etc/mysql/my.cnf:ro
+        networks:
+            - dapi_network
+        ports:
+            - "3307:3306"
+
+    dapi_redis:
+        image: redis:7.2-alpine
+        container_name: dapi_redis
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        networks:
+            - dapi_network
+
+volumes:
+    dapi_mysql_data:
+        driver: local
+
+networks:
+    dapi_network:
+        driver: bridge
