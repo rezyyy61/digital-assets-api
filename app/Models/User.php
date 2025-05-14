@@ -46,4 +46,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function digitalAssets()
+    {
+        return $this->hasMany(DigitalAsset::class);
+    }
+
 }
