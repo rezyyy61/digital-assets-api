@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\MintNftJob;
 use App\Models\DigitalAsset;
+use App\Models\MintRequest;
+use App\Services\SuiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -44,7 +47,7 @@ class DigitalAssetController extends Controller
         ]);
     }
 
-    public function mint($id, Request $request)
+    public function mint($id, Request $request, SuiService $suiService)
     {
         $asset = $request->user()->digitalAssets()->findOrFail($id);
 
@@ -54,14 +57,27 @@ class DigitalAssetController extends Controller
             ], 400);
         }
 
-        $asset->is_minted = true;
-        $asset->minted_url = 'https://explorer.sui.io/fake-nft/' . $asset->id;
-        $asset->save();
+        $existing = MintRequest::where('digital_asset_id', $asset->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A mint request is already pending.'
+            ], 400);
+        }
+
+        $mintRequest = MintRequest::create([
+            'digital_asset_id' => $asset->id,
+        ]);
+
+
+        MintNftJob::dispatch($mintRequest);
 
         return response()->json([
-            'message' => 'Asset marked as minted (simulated).',
-            'asset' => $asset
-        ]);
+            'message' => 'Mint request registered. It will be processed soon.',
+        ], 201);
     }
+
 
 }

@@ -6,6 +6,7 @@ services:
             args:
                 USER_UID: ${UID}
                 USER_GID: ${GID}
+                DOCKER_GID: ${DOCKER_GID}
         image: ${APP_IMAGE:-dapi_app_image}
         container_name: dapi_app
         restart: unless-stopped
@@ -16,6 +17,7 @@ services:
         volumes:
             - ./:/var/www
             - ./docker-config/php/php.ini:/usr/local/etc/php/php.ini
+            - /var/run/docker.sock:/var/run/docker.sock
         networks:
             - dapi_network
 
@@ -60,6 +62,21 @@ services:
             - "6379:6379"
         networks:
             - dapi_network
+
+    sui_cli:
+        build:
+            context: ./sui-docker
+            dockerfile: Dockerfile
+        container_name: sui_cli
+        volumes:
+            - ./sui-contracts:/sui/sui-contracts
+            - ./sui-wallet:/root/.sui/sui_config
+        working_dir: /sui
+        networks:
+            - dapi_network
+        command: [ "tail", "-f", "/dev/null" ]
+
+
 
 volumes:
     dapi_mysql_data:

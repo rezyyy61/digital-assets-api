@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DigitalAssetController;
+use App\Services\SuiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/digital-assets', [DigitalAssetController::class, 'store']);
     Route::get('/digital-assets', [DigitalAssetController::class, 'index']);
     Route::post('/digital-assets/{id}/mint', [DigitalAssetController::class, 'mint']);
+});
+Route::get('/sui-version', function () {
+    $sui = new SuiService();
+    return response()->json($sui->checkVersion());
 });

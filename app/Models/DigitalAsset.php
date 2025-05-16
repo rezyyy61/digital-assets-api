@@ -16,6 +16,7 @@ class DigitalAsset extends Model
         'file_path',
         'is_minted',
         'minted_url',
+        'mint_result'
     ];
 
     public function user()

@@ -1,6 +1,8 @@
 # Base image
 FROM php:8.2-fpm
 
+RUN apt-get update && apt-get install -y docker.io
+
 # Set arguments for user and group IDs
 ARG USER_UID=1000
 ARG USER_GID=1000
@@ -55,6 +57,9 @@ COPY --chown=www:www . /var/www
 RUN chown -R www:www /var/www
 
 # Switch to the new user
+ARG DOCKER_GID=999
+RUN getent group docker || groupadd -g ${DOCKER_GID} docker
+RUN usermod -aG docker www
 USER www
 
 # Expose port and start PHP-FPM
